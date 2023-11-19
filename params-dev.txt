@@ -1,0 +1,3 @@
+s3bucketName=geeksinc-images-dev
+cloudFrontCname=images.geeksinc.com.au
+certArn=arn:aws:acm:us-east-1:385230342790:certificate/e290aad3-97e5-40d8-ad7c-8fee1bbb8da8

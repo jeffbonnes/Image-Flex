@@ -1,0 +1,3 @@
+s3bucketName=atf6-images-prod
+cloudFrontCname=images.atableforsix.com.au
+certArn=TODO

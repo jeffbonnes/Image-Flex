@@ -1,3 +1,14 @@
+# Geeks Inc / ATF6 Deployment Notes
+OPTIONAL TODO: Override the DeployBucket in bin/meta.sh so no `npm run create` is needed
+
+When SSL Cert for images.atableforsix.com.au is created, put it in params-prod.txt
+
+To Deploy: `npm run update`
+
+After stack is created, need to create the A record in Route53 to Alias to the new CloudFront distribution
+
+To copy the test image: aws s3 cp testimage/1.jpg s3://geeksinc-images-dev/
+
 # Image Flex
 A robust, secure, and easily deployable image resizing service that scales, optimizes, and caches images on "the edge," on the fly, built on AWS Serverless technologies. Served by [CloudFront](https://aws.amazon.com/cloudfront/) via an [Origin Access Identity](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html). Executed on [Lambda@Edge](https://aws.amazon.com/lambda/edge/). Backed by [S3](https://aws.amazon.com/s3/). Protected by [AWS WAF](https://docs.aws.amazon.com/waf/latest/developerguide/web-acl.html). Provisioned via [CloudFormation](https://aws.amazon.com/cloudformation/). Built and deployed by the [Serverless Application Model (SAM)](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) CLI. 
 

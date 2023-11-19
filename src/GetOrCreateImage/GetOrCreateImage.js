@@ -52,7 +52,7 @@ const GetOrCreateImage = async event => {
             /**
              * @see https://sharp.pixelplumbing.com/api-output#webp for a list of options.
              */
-            quality: 95
+            quality: 80
           })
           .toBuffer()
           .catch(error => {

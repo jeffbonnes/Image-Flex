@@ -9,4 +9,5 @@ sam deploy \
   --region ${REGION} \
   --stack-name ${Stackname} \
   --template-file .aws-sam/build/template-packaged.yaml \
-  --capabilities CAPABILITY_IAM
+  --capabilities CAPABILITY_IAM \
+  --parameter-overrides $(cat params-${ENV}.txt)

@@ -1,6 +1,20 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 
+Parameters:
+  s3bucketName:
+    Type: String
+    Description: Name of the image bucket to be created
+    Default: 'your-bucket-name-here'
+  cloudFrontCname:
+    Type: String
+    Description: custom cname of the cloudfront group
+    Default: 'images.yourdomain.com.au'
+  certArn:
+    Type: String
+    Description: arn of the certificate for cloudfront
+    Default: 'your cert arn'
+
 Resources:
   EdgeLambdaRole:
     Type: AWS::IAM::Role
@@ -21,7 +35,7 @@ Resources:
         - arn:aws:iam::aws:policy/AWSXrayFullAccess
       Policies:
         -
-          PolicyName: !Sub ${AWS::StackName}-images-Lambda-S3
+          PolicyName: !Sub ${AWS::StackName}-Lambda-S3
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -29,8 +43,8 @@ Resources:
               Action:
                 - s3:*
               Resource:
-                - !Sub arn:aws:s3:::${AWS::StackName}-images
-                - !Sub arn:aws:s3:::${AWS::StackName}-images/*
+                - !GetAtt ImageBucket.Arn
+                - !Sub ${ImageBucket.Arn}/*
 
   OriginAccessId:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
@@ -41,7 +55,7 @@ Resources:
   ImageBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-images
+      BucketName: !Ref s3bucketName 
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -68,14 +82,14 @@ Resources:
             Action:
               - s3:GetObject
             Effect: Allow
-            Resource: !Sub arn:aws:s3:::${AWS::StackName}-images/*
+            Resource: !Sub ${ImageBucket.Arn}/*
             Principal:
               AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${OriginAccessId}
 
   CloudFrontLoggingBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-cflogs
+      BucketName: !Sub ${s3bucketName}-logs
       PublicAccessBlockConfiguration:
         BlockPublicAcls: Yes
         BlockPublicPolicy: Yes
@@ -109,49 +123,17 @@ Resources:
       Timeout: 30
       Role: !GetAtt EdgeLambdaRole.Arn
 
-  WebACL:
-    Type: AWS::WAFv2::WebACL
-    Properties:
-      DefaultAction:
-        Allow: {}
-      Name: !Sub ${AWS::StackName}-WebAcl
-      Rules:
-        - Name: AWS-AWSManagedRulesCommonRuleSet
-          Priority: 0
-          OverrideAction:
-            None: {}
-          VisibilityConfig:
-            SampledRequestsEnabled: true
-            CloudWatchMetricsEnabled: true
-            MetricName: !Sub ${AWS::StackName}-MetricForAMRCRS
-          Statement:
-            ManagedRuleGroupStatement:
-              VendorName: AWS
-              Name: AWSManagedRulesCommonRuleSet
-              ExcludedRules:
-                - Name: NoUserAgent_HEADER
-      Scope: CLOUDFRONT
-      VisibilityConfig:
-        SampledRequestsEnabled: true
-        CloudWatchMetricsEnabled: true
-        MetricName: !Sub ${AWS::StackName}-WebAcl
-
   Distribution:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
-        # Uncomment the next two lines to use a custom CNAME (must be configured in Route 53, or your DNS provider).
-        # Aliases:
-        #   - YOUR CNAME HERE
-
+        Aliases:
+          - !Ref cloudFrontCname
         ViewerCertificate:
-          CloudFrontDefaultCertificate: true
-          # Replace the above line with the following to indicate your own certificate to use for HTTPS
-          # CloudFrontDefaultCertificate: false
-          # AcmCertificateArn: YOUR CERTIFICATE MANAGER ARN HERE
-          # SslSupportMethod: sni-only
+          AcmCertificateArn: !Ref certArn
+          SslSupportMethod: sni-only
 
-        Comment: !Sub Distribution for ${AWS::StackName}
+        Comment: !Ref cloudFrontCname
         DefaultCacheBehavior:
           Compress: true
           ForwardedValues:
@@ -171,19 +153,18 @@ Resources:
             - EventType: origin-response
               LambdaFunctionARN: !Ref GetOrCreateImageFunction.Version
           MinTTL: 100
-          TargetOriginId: !Sub ${AWS::StackName}-images
-          ViewerProtocolPolicy: allow-all
+          TargetOriginId: !Ref s3bucketName
+          ViewerProtocolPolicy: redirect-to-https
         Enabled: true
         Logging:
           Bucket: !GetAtt CloudFrontLoggingBucket.DomainName
 
         Origins:
-          - DomainName: !Sub ${AWS::StackName}-images.s3.amazonaws.com
-            Id: !Sub ${AWS::StackName}-images
+          - DomainName: !Sub ${s3bucketName}.s3.amazonaws.com
+            Id: !Ref s3bucketName
             S3OriginConfig:
               OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OriginAccessId}
         PriceClass: PriceClass_All
-        WebACLId: !GetAtt WebACL.Arn
 
 Outputs:
   DistributionDomain:
