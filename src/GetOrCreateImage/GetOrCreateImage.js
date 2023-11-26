@@ -84,7 +84,8 @@ const GetOrCreateImage = async event => {
         bodyEncoding: 'base64',
         headers: {
           ...response.headers,
-          'content-type': [{ key: 'Content-Type', value: contentType }]
+          'content-type': [{ key: 'Content-Type', value: contentType }],
+          'cache-control': [{key: 'Cache-Control', value: 60 * 60 * 24 * 90 }] // 90 Days
         }
       }
     })

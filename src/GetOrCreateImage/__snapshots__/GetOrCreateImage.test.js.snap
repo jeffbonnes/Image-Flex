@@ -5,6 +5,12 @@ Object {
   "body": "[object Object]",
   "bodyEncoding": "base64",
   "headers": Object {
+    "cache-control": Array [
+      Object {
+        "key": "Cache-Control",
+        "value": 7776000,
+      },
+    ],
     "content-type": Array [
       Object {
         "key": "Content-Type",
@@ -52,6 +58,12 @@ Object {
   "body": "[object Object]",
   "bodyEncoding": "base64",
   "headers": Object {
+    "cache-control": Array [
+      Object {
+        "key": "Cache-Control",
+        "value": 7776000,
+      },
+    ],
     "content-type": Array [
       Object {
         "key": "Content-Type",
