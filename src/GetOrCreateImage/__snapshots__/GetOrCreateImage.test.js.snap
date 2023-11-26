@@ -115,6 +115,12 @@ Object {
         "value": "bytes",
       },
     ],
+    "cache-control": Array [
+      Object {
+        "key": "Cache-Control",
+        "value": "public, max-age=31536000",
+      },
+    ],
     "content-length": Array [
       Object {
         "key": "Content-Length",
