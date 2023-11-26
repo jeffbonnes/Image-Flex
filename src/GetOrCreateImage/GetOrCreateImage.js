@@ -1,10 +1,10 @@
-'use strict'
-
 const AWS = require('aws-xray-sdk').captureAWS(require('aws-sdk'))
 const Sharp = require('sharp')
 const { parse } = require('querystring')
 
 const S3 = new AWS.S3()
+
+const DAYS_TO_CACHE = 60 * 60 * 24 * 365; // 90 Days
 
 const GetOrCreateImage = async event => {
   const {
@@ -25,7 +25,11 @@ const GetOrCreateImage = async event => {
     }
   } = event.Records[0]
 
-  if (!['403', '404'].includes(status)) return response
+  if (!['403', '404'].includes(status)) return { ...response,
+    headers: {
+      ...response.headers,
+      'cache-control': [{key: 'Cache-Control', value: DAYS_TO_CACHE }]
+  }};
 
   let { nextExtension, height, sourceImage, width } = parse(querystring)
   const [bucket] = domainName.match(/.+(?=\.s3\.amazonaws\.com)/i)
@@ -85,7 +89,7 @@ const GetOrCreateImage = async event => {
         headers: {
           ...response.headers,
           'content-type': [{ key: 'Content-Type', value: contentType }],
-          'cache-control': [{key: 'Cache-Control', value: 60 * 60 * 24 * 90 }] // 90 Days
+          'cache-control': [{key: 'Cache-Control', value: DAYS_TO_CACHE }]
         }
       }
     })

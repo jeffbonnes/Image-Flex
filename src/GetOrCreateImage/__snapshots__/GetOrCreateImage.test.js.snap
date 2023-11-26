@@ -8,7 +8,7 @@ Object {
     "cache-control": Array [
       Object {
         "key": "Cache-Control",
-        "value": 7776000,
+        "value": 31536000,
       },
     ],
     "content-type": Array [
@@ -61,7 +61,7 @@ Object {
     "cache-control": Array [
       Object {
         "key": "Cache-Control",
-        "value": 7776000,
+        "value": 31536000,
       },
     ],
     "content-type": Array [
@@ -113,6 +113,12 @@ Object {
       Object {
         "key": "Accept-Ranges",
         "value": "bytes",
+      },
+    ],
+    "cache-control": Array [
+      Object {
+        "key": "Cache-Control",
+        "value": 31536000,
       },
     ],
     "content-length": Array [
