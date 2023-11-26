@@ -156,6 +156,7 @@ Resources:
           TargetOriginId: !Ref s3bucketName
           ViewerProtocolPolicy: redirect-to-https
         Enabled: true
+        HttpVersion: http2and3
         Logging:
           Bucket: !GetAtt CloudFrontLoggingBucket.DomainName
 

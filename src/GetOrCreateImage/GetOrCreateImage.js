@@ -4,7 +4,7 @@ const { parse } = require('querystring')
 
 const S3 = new AWS.S3()
 
-const DAYS_TO_CACHE = 60 * 60 * 24 * 365; // 90 Days
+const DAYS_TO_CACHE = 60 * 60 * 24 * 365; // 365 Days
 
 const GetOrCreateImage = async event => {
   const {
@@ -25,11 +25,12 @@ const GetOrCreateImage = async event => {
     }
   } = event.Records[0]
 
-  if (!['403', '404'].includes(status)) return { ...response,
+  if (!['403', '404'].includes(status)) return {...response,
     headers: {
       ...response.headers,
-      'cache-control': [{key: 'Cache-Control', value: DAYS_TO_CACHE }]
-  }};
+      'cache-control': [{key: 'Cache-Control', value: `public, max-age=${DAYS_TO_CACHE}` }]
+    }
+  };
 
   let { nextExtension, height, sourceImage, width } = parse(querystring)
   const [bucket] = domainName.match(/.+(?=\.s3\.amazonaws\.com)/i)
@@ -40,7 +41,12 @@ const GetOrCreateImage = async event => {
   height = parseInt(height, 10) || null
   width = parseInt(width, 10)
 
-  if (!width) return response
+  if (!width) return {...response,
+    headers: {
+      ...response.headers,
+      'cache-control': [{key: 'Cache-Control', value: `public, max-age=${DAYS_TO_CACHE}` }]
+    }
+  };
 
   return S3.getObject({ Bucket: bucket, Key: sourceKey })
     .promise()
@@ -89,7 +95,7 @@ const GetOrCreateImage = async event => {
         headers: {
           ...response.headers,
           'content-type': [{ key: 'Content-Type', value: contentType }],
-          'cache-control': [{key: 'Cache-Control', value: DAYS_TO_CACHE }]
+          'cache-control': [{key: 'Cache-Control', value: `public, max-age=${DAYS_TO_CACHE}` }]
         }
       }
     })
