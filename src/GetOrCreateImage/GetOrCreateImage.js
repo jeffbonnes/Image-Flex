@@ -1,4 +1,4 @@
-const AWS = require('aws-xray-sdk').captureAWS(require('aws-sdk'))
+const AWS = require('aws-sdk')
 const Sharp = require('sharp')
 const { parse } = require('querystring')
 
