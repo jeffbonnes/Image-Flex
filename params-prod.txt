@@ -1,3 +1,3 @@
 s3bucketName=atf6-images-prod
 cloudFrontCname=images.atableforsix.com.au
-certArn=TODO
+certArn=arn:aws:acm:us-east-1:973068827555:certificate/3030409a-617b-4638-a3c6-8afed6bca301

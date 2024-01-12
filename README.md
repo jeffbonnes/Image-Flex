@@ -1,5 +1,5 @@
 # Geeks Inc / ATF6 Deployment Notes
-OPTIONAL TODO: Override the DeployBucket in bin/meta.sh so no `npm run create` is needed
+OPTIONAL TODO: Override the DeployBucket in bin/meta.sh so no `npm run setup` is needed
 
 When SSL Cert for images.atableforsix.com.au is created, put it in params-prod.txt
 
