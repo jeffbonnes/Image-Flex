@@ -1,8 +1,8 @@
-const AWS = require('aws-sdk')
-const Sharp = require('sharp')
-const { parse } = require('querystring')
+import { S3Client, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+const Sharp = require('sharp');
+const { parse } = require('querystring');
 
-const S3 = new AWS.S3()
+const s3Client = new S3Client({});
 
 const DAYS_TO_CACHE = 60 * 60 * 24 * 365; // 365 Days
 
@@ -48,13 +48,12 @@ const GetOrCreateImage = async event => {
     }
   };
 
-  return S3.getObject({ Bucket: bucket, Key: sourceKey })
-    .promise()
+  return s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: sourceKey }))
     .then(imageObj => {
-      let resizedImage
-      const errorMessage = `Error while resizing "${sourceKey}" to "${key}":`
+      let resizedImage;
+      const errorMessage = `Error while resizing "${sourceKey}" to "${key}":`;
 
-      // Required try/catch because Sharp.catch() doesn't seem to actually catch anything. 
+      // Required try/catch because Sharp.catch() doesn't seem to actually catch anything.
       try {
         resizedImage = Sharp(imageObj.Body)
           .resize(width, height)
@@ -62,29 +61,31 @@ const GetOrCreateImage = async event => {
             /**
              * @see https://sharp.pixelplumbing.com/api-output#webp for a list of options.
              */
-            quality: 80
+            quality: 80,
           })
           .toBuffer()
-          .catch(error => {
-            throw new Error(`${errorMessage} ${error}`)
-          })
-      } catch(error) {
-        throw new Error(`${errorMessage} ${error}`)
+          .catch((error) => {
+            throw new Error(`${errorMessage} ${error}`);
+          });
+      } catch (error) {
+        throw new Error(`${errorMessage} ${error}`);
       }
-      return resizedImage
+      return resizedImage;
     })
-    .then(async imageBuffer => {
-      await S3.putObject({
-        Body: imageBuffer,
-        Bucket: bucket,
-        ContentType: contentType,
-        Key: key,
-        StorageClass: 'STANDARD'
-      })
-        .promise()
-        .catch(error => {
-          throw new Error(`Error while putting resized image '${uri}' into bucket: ${error}`)
-        })
+    .then(async (imageBuffer) => {
+      await s3Client
+        .send(
+          new PutObjectCommand({
+            Body: imageBuffer,
+            Bucket: bucket,
+            ContentType: contentType,
+            Key: key,
+            StorageClass: 'STANDARD',
+          })
+        )
+        .catch((error) => {
+          throw new Error(`Error while putting resized image '${uri}' into bucket: ${error}`);
+        });
 
       return {
         ...response,
@@ -95,12 +96,12 @@ const GetOrCreateImage = async event => {
         headers: {
           ...response.headers,
           'content-type': [{ key: 'Content-Type', value: contentType }],
-          'cache-control': [{key: 'Cache-Control', value: `public, max-age=${DAYS_TO_CACHE}` }]
-        }
-      }
+          'cache-control': [{ key: 'Cache-Control', value: `public, max-age=${DAYS_TO_CACHE}` }],
+        },
+      };
     })
-    .catch(error => {
-      const errorMessage = `Error while getting source image object "${sourceKey}": ${error}`
+    .catch((error) => {
+      const errorMessage = `Error while getting source image object "${sourceKey}": ${error}`;
 
       return {
         ...response,
@@ -110,10 +111,10 @@ const GetOrCreateImage = async event => {
         bodyEncoding: 'text',
         headers: {
           ...response.headers,
-          'content-type': [{ key: 'Content-Type', value: 'text/plain' }]
-        }
-      }
-    })
+          'content-type': [{ key: 'Content-Type', value: 'text/plain' }],
+        },
+      };
+    });
 }
 
 module.exports = GetOrCreateImage
