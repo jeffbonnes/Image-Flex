@@ -12,7 +12,11 @@ const UriToS3Key = event => {
 
   if (!width || isNaN(parseInt(width, 10))) return request
 
-  const [,prefix, imageName, prevExtension] = uri.match(/(.*)\/(.*)\.(\w*)/)
+  const uriMatch = uri.match(/(.*)\/(.*)\.(\w*)/)
+  if (!uriMatch) {
+    return request
+  }
+  const [,prefix, imageName, prevExtension] = uriMatch
   const acceptHeader = Array.isArray(headers.accept)
     ? headers.accept[0].value
     : ''
