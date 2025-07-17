@@ -8,7 +8,9 @@ const mockS3Client = {
         throw new Error()
       }
       return {
-        Body: mockImage,
+        Body: {
+          transformToByteArray: async () => Buffer.from(mockImage, 'base64')
+        },
         ContentType: 'image/jpeg'
       }
     }

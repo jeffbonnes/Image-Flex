@@ -49,13 +49,15 @@ const GetOrCreateImage = async event => {
   };
 
   return s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: sourceKey }))
-    .then(imageObj => {
+    .then(async imageObj => {
+      const imageBuffer = await imageObj.Body.transformToByteArray()
+      
       let resizedImage
       const errorMessage = `Error while resizing "${sourceKey}" to "${key}":`
 
       // Required try/catch because Sharp.catch() doesn't seem to actually catch anything. 
       try {
-        resizedImage = Sharp(imageObj.Body)
+        resizedImage = Sharp(imageBuffer)
           .resize(width, height)
           .toFormat(nextExtension, {
             /**
