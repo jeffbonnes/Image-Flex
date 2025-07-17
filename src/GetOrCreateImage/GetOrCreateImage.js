@@ -2,7 +2,7 @@ const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/clien
 const Sharp = require('sharp')
 const { parse } = require('querystring')
 
-const s3Client = new S3Client({})
+const s3Client = new S3Client({ region: 'us-east-1' })
 
 const DAYS_TO_CACHE = 60 * 60 * 24 * 365; // 365 Days
 
