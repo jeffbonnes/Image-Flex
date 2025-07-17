@@ -1,8 +1,8 @@
-const AWS = require('aws-sdk')
+const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/client-s3')
 const Sharp = require('sharp')
 const { parse } = require('querystring')
 
-const S3 = new AWS.S3()
+const s3Client = new S3Client({})
 
 const DAYS_TO_CACHE = 60 * 60 * 24 * 365; // 365 Days
 
@@ -48,8 +48,7 @@ const GetOrCreateImage = async event => {
     }
   };
 
-  return S3.getObject({ Bucket: bucket, Key: sourceKey })
-    .promise()
+  return s3Client.send(new GetObjectCommand({ Bucket: bucket, Key: sourceKey }))
     .then(imageObj => {
       let resizedImage
       const errorMessage = `Error while resizing "${sourceKey}" to "${key}":`
@@ -74,14 +73,13 @@ const GetOrCreateImage = async event => {
       return resizedImage
     })
     .then(async imageBuffer => {
-      await S3.putObject({
+      await s3Client.send(new PutObjectCommand({
         Body: imageBuffer,
         Bucket: bucket,
         ContentType: contentType,
         Key: key,
         StorageClass: 'STANDARD'
-      })
-        .promise()
+      }))
         .catch(error => {
           throw new Error(`Error while putting resized image '${uri}' into bucket: ${error}`)
         })
